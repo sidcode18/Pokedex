@@ -1,30 +1,53 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pokedex/models/pokemon.dart';
+import 'package:pokedex/providers/favorites_provider.dart';
+import 'package:pokedex/services/favorites_storage.dart';
 
-import 'package:pokedex/main.dart';
+class _MemoryStorage extends FavoritesStorage {
+  Set<int> ids = {};
+  Map<int, Pokemon> cache = {};
+
+  @override
+  Future<Set<int>> loadIds() async => ids;
+
+  @override
+  Future<Map<int, Pokemon>> loadCache() async => cache;
+
+  @override
+  Future<void> save({
+    required Set<int> ids,
+    required Map<int, Pokemon> cache,
+  }) async {
+    this.ids = Set<int>.from(ids);
+    this.cache = Map<int, Pokemon>.from(cache);
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test(
+    'FavoritesProvider is a single source of truth for favorite ids',
+    () async {
+      final storage = _MemoryStorage();
+      final provider = FavoritesProvider(storage: storage);
+      await provider.load();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      const bulbasaur = Pokemon(
+        id: 1,
+        name: 'bulbasaur',
+        imageUrl: 'https://example.com/1.png',
+        types: ['grass', 'poison'],
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(provider.isFavorite(1), isFalse);
+      await provider.toggleFavorite(bulbasaur);
+      expect(provider.isFavorite(1), isTrue);
+      expect(provider.favorites.single.id, 1);
+      expect(storage.ids, {1});
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+      await provider.toggleFavorite(bulbasaur);
+      expect(provider.isFavorite(1), isFalse);
+      expect(provider.favorites, isEmpty);
+      expect(storage.ids, isEmpty);
+    },
+  );
 }
