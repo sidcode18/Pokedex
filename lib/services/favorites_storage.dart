@@ -9,9 +9,13 @@ class FavoritesStorage {
   static const _cacheKey = 'favorite_pokemon_cache';
 
   Future<Set<int>> loadIds() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_idsKey) ?? const [];
-    return raw.map(int.tryParse).whereType<int>().toSet();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_idsKey) ?? const [];
+      return raw.map(int.tryParse).whereType<int>().toSet();
+    } catch (_) {
+      return {};
+    }
   }
 
   Future<Map<int, Pokemon>> loadCache() async {

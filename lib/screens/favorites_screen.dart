@@ -16,7 +16,7 @@ class FavoritesScreen extends StatelessWidget {
     final items = favorites.favorites;
 
     return ColoredBox(
-      color: Colors.white,
+      color: AppTheme.background,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,7 +25,11 @@ class FavoritesScreen extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Text(
                 'Favorites',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
               ),
             ),
             Expanded(

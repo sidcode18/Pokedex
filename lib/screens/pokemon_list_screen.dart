@@ -50,12 +50,32 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
       color: AppTheme.background,
       child: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Text(
+                'Pokédex',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               child: _SearchField(
                 controller: _searchController,
-                onChanged: list.setQuery,
+                onChanged: (val) {
+                  setState(() {});
+                  list.setQuery(val);
+                },
+                onClear: () {
+                  _searchController.clear();
+                  list.setQuery('');
+                  setState(() {});
+                },
               ),
             ),
             const SizedBox(height: 12),
@@ -173,10 +193,15 @@ class _PokemonListScreenState extends State<PokemonListScreen> {
 const _clearSentinel = '__all__';
 
 class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
+  const _SearchField({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+  });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +212,16 @@ class _SearchField extends StatelessWidget {
         hintText: 'Search Pokémon...',
         hintStyle: const TextStyle(color: AppTheme.textSecondary),
         prefixIcon: const Icon(Icons.search, color: AppTheme.textSecondary),
+        suffixIcon: controller.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(
+                  Icons.clear,
+                  size: 20,
+                  color: AppTheme.textSecondary,
+                ),
+                onPressed: onClear,
+              )
+            : null,
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(

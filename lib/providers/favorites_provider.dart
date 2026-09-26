@@ -17,7 +17,15 @@ class FavoritesProvider extends ChangeNotifier {
   Set<int> get favoriteIds => Set.unmodifiable(_ids);
 
   List<Pokemon> get favorites {
-    final items = _ids.map((id) => _cache[id]).whereType<Pokemon>().toList();
+    final items = _ids.map((id) {
+      final cached = _cache[id];
+      if (cached != null) return cached;
+      return Pokemon(
+        id: id,
+        name: 'pokemon #$id',
+        imageUrl: Pokemon.artworkUrlFor(id),
+      );
+    }).toList();
     items.sort((a, b) => a.id.compareTo(b.id));
     return items;
   }
@@ -65,6 +73,7 @@ class FavoritesProvider extends ChangeNotifier {
   void rememberPokemon(Pokemon pokemon) {
     if (!_ids.contains(pokemon.id)) return;
     _cache[pokemon.id] = pokemon;
+    _persist();
   }
 
   Future<void> _persist() {

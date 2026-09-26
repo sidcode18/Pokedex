@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'favorites_screen.dart';
 import 'pokemon_list_screen.dart';
-import 'regions_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -15,11 +14,7 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
 
-  static const _pages = [
-    PokemonListScreen(),
-    RegionsScreen(),
-    FavoritesScreen(),
-  ];
+  static const _pages = [PokemonListScreen(), FavoritesScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +29,6 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.catching_pokemon),
             selectedIcon: Icon(Icons.catching_pokemon, color: AppTheme.accent),
             label: 'Pokédex',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.location_on_outlined),
-            selectedIcon: Icon(Icons.location_on, color: AppTheme.accent),
-            label: 'Regions',
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_border),

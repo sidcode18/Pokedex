@@ -17,31 +17,21 @@ class PokeApiService {
   Future<PokemonPage> fetchPokemonPage({String? url}) async {
     final pageJson = await _getJson(url ?? defaultListUrl);
     final results = pageJson['results'];
-    final refs = <Pokemon>[];
+    final pokemonList = <Pokemon>[];
     if (results is List) {
       for (final item in results) {
         if (item is Map<String, dynamic>) {
           final pokemon = Pokemon.fromListResult(item);
           if (pokemon.id > 0) {
-            refs.add(pokemon);
+            pokemonList.add(pokemon);
           }
         }
       }
     }
 
-    final detailed = await Future.wait(
-      refs.map((pokemon) async {
-        try {
-          return await fetchPokemon(pokemon.id.toString());
-        } catch (_) {
-          return pokemon;
-        }
-      }),
-    );
-
     final next = pageJson['next'];
     return PokemonPage(
-      pokemon: detailed,
+      pokemon: pokemonList,
       nextUrl: next is String && next.isNotEmpty ? next : null,
     );
   }
@@ -87,6 +77,9 @@ class PokeApiService {
     } on PokeApiException {
       rethrow;
     } on FormatException {
-      throw const PokeApiException('Received an invalid response from PokéAPI.');
+      throw const PokeApiException(
+        'Received an invalid response from PokéAPI.',
+      );
     }
+  }
 }

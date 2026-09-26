@@ -99,7 +99,15 @@ class _PokemonDetailViewState extends State<_PokemonDetailView> {
               )
             else if (pokemon != null)
               Expanded(
-                child: _DetailBody(pokemon: pokemon, color: typeColor),
+                child: _DetailBody(
+                  pokemon: pokemon,
+                  color: typeColor,
+                  isLoading: detail.isLoading,
+                  error: detail.error,
+                  onRetry: () => context.read<PokemonDetailProvider>().load(
+                    widget.nameOrId,
+                  ),
+                ),
               ),
           ],
         ),
@@ -109,10 +117,19 @@ class _PokemonDetailViewState extends State<_PokemonDetailView> {
 }
 
 class _DetailBody extends StatelessWidget {
-  const _DetailBody({required this.pokemon, required this.color});
+  const _DetailBody({
+    required this.pokemon,
+    required this.color,
+    required this.isLoading,
+    required this.error,
+    required this.onRetry,
+  });
 
   final Pokemon pokemon;
   final Color color;
+  final bool isLoading;
+  final String? error;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -136,12 +153,13 @@ class _DetailBody extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: pokemon.types
-                          .map((type) => TypeChip(type: type, compact: false))
-                          .toList(),
-                    ),
+                    if (pokemon.types.isNotEmpty)
+                      Wrap(
+                        spacing: 8,
+                        children: pokemon.types
+                            .map((type) => TypeChip(type: type, compact: false))
+                            .toList(),
+                      ),
                   ],
                 ),
               ),
@@ -177,30 +195,34 @@ class _DetailBody extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
-            child: DefaultTabController(
-              length: 2,
-              child: Column(
-                children: [
-                  TabBar(
-                    labelColor: color,
-                    unselectedLabelColor: AppTheme.textSecondary,
-                    indicatorColor: color,
-                    tabs: const [
-                      Tab(text: 'About'),
-                      Tab(text: 'Base Stats'),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
+            child: isLoading && pokemon.stats.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : error != null && pokemon.stats.isEmpty
+                ? ErrorView(message: error!, onRetry: onRetry)
+                : DefaultTabController(
+                    length: 2,
+                    child: Column(
                       children: [
-                        _AboutTab(pokemon: pokemon),
-                        _StatsTab(pokemon: pokemon, color: color),
+                        TabBar(
+                          labelColor: color,
+                          unselectedLabelColor: AppTheme.textSecondary,
+                          indicatorColor: color,
+                          tabs: const [
+                            Tab(text: 'About'),
+                            Tab(text: 'Base Stats'),
+                          ],
+                        ),
+                        Expanded(
+                          child: TabBarView(
+                            children: [
+                              _AboutTab(pokemon: pokemon),
+                              _StatsTab(pokemon: pokemon, color: color),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
           ),
         ),
       ],
